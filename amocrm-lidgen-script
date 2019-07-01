@@ -1,0 +1,179 @@
+<?php
+
+// Подключаем архив с библиотекой https://github.com/dotzero/amocrm-php
+require_once 'amocrm.phar';
+
+// Function for basic field validation (present and neither empty nor only white space)
+function IsNullOrEmptyString($question){
+  return (!isset($question) || trim($question)==='');
+}
+
+try {
+
+	//Конфиг для авторизации в amoCRM
+	$domain = 'new59a03754144d6';
+	$login  = 'Alfakrov.by@gmail.com';
+	$hash   = '2160594d079bc8551616af914a89c080f0570d9a';
+	
+	//ID юзеров amoCRM
+	$sergey  = 1691638;
+	$alina   = 2177455;
+	$pavel   = 3331330;
+
+	$current_user = $sergey;
+
+	//Создаем новый экземпляр
+    $amo = new \AmoCRM\Client($domain, $login, $hash);
+
+    $form_data = $_POST;
+
+    //прокидываем в переменные значения полей
+    $user_name     = $form_data['your-name'];
+    $user_email    = $form_data['your-email'];
+    $user_phone    = $form_data['your-tel'];
+    $user_message  = $form_data['your-message'];
+    $form_type     = $form_data['form-type']; // форма
+
+    //Калькулятор
+    $calc_area     = $form_data['number-589']; //площадь крыши
+    $calc_metal    = $form_data['menu-891']; // тип металла
+    $calc_water    = $form_data['radio-869']; // водосточная система
+    $calc_elements = $form_data['radio-870']; // доборные элементы кровли
+    $calc_foof     = $form_data['radio-927']; // тип кровли
+
+
+    //Собираем UTM метки со сгенерированных полей 
+	function getUtmField($fieldName){
+	    if( isset($_POST[$fieldName]) ){
+	        return $_POST[$fieldName];
+	    } else {
+	        return '(none)';
+	    }
+	}
+	$firstTyp      = getUtmField('sb_first_typ');
+	$firstSrc      = getUtmField('sb_first_src');
+	$firstMdm      = getUtmField('sb_first_mdm');
+	$firstCmp      = getUtmField('sb_first_cmp');
+	$firstCnt      = getUtmField('sb_first_cnt');
+	$firstTrm      = getUtmField('sb_first_trm');
+
+	$firstAddfd    = getUtmField('sb_first_add_fd');
+	$firstAddep    = getUtmField('sb_first_add_ep');
+	$firstAddRf    = getUtmField('sb_first_add_rf');
+
+	$currentTyp    = getUtmField('sb_current_typ');
+	$currentSrc    = getUtmField('sb_current_src');
+	$currentMdm    = getUtmField('sb_current_mdm');
+	$currentCmp    = getUtmField('sb_current_cmp');
+	$currentCnt    = getUtmField('sb_current_cnt');
+	$currentTrm    = getUtmField('sb_current_trm');
+
+	$currentAddFd  = getUtmField('sb_current_add_fd');
+	$currentAddEp  = getUtmField('sb_current_add_ep');
+	$currentAddRf  = getUtmField('sb_current_add_rf');
+
+	$sessionPgs    = getUtmField('sb_session_pgs');
+	$sessionCpg    = getUtmField('sb_session_cpg');
+
+	$udataVst      = getUtmField('sb_udata_vst');
+	$udataUag      = getUtmField('sb_udata_uag');
+
+	// Заполняем текст сообщения
+	$note_body  = "Данные по UTM меткам\n";
+	$note_body .= "-------------------- \n";
+	$note_body .= "ПЕРВЫЙ ВИЗИТ\n";
+	$note_body .= "Тип трафика первого визита = " . $firstTyp . "\n";
+	$note_body .= "Источник первого визита = " . $firstSrc . "\n";
+	$note_body .= "Канал первого визита = " . $firstMdm . "\n";
+	$note_body .= "Кампания первого визита = " . $firstCmp . "\n";
+	$note_body .= "Контент первого визита = " . $firstCnt . "\n";
+	$note_body .= "Ключевое слово первого визита = " . $firstTrm . "\n";
+	$note_body .= "Дата и время первого визита визита = " . $firstAddfd . "\n";
+	$note_body .= "Точка входа первого визита = " . $firstAddep . "\n";
+	$note_body .= "Реферер первого визита = " . $firstAddRf . "\n\n";
+	$note_body .= " -------------------- \n";
+	$note_body .= "ТЕКУЩИЙ ВИЗИТ\n";
+	$note_body .= "Тип трафика текущего визита = " . $currentTyp . "\n";
+	$note_body .= "Источник текущего визита = " . $currentSrc . "\n";
+	$note_body .= "Канал текущего визита = " . $currentMdm . "\n";
+	$note_body .= "Кампания текущего визита = " . $currentCmp . "\n";
+	$note_body .= "Контент текущего визита = " . $currentCnt . "\n";
+	$note_body .= "Ключевое слово текущего визита = " . $currentTrm . "\n";
+	$note_body .= "Дата и время текущего визита визита = " . $currentAddFd . "\n";
+	$note_body .= "Точка входа текущего визита = " . $currentAddEp . "\n";
+	$note_body .= "Реферер текущего визита = " . $currentAddRf . "\n";
+	$note_body .= "--------------------\n";
+	$note_body .= "ДАННЫЕ О ТЕКУЩЕЙ СЕССИИ\n";
+	$note_body .= "Сколько страниц сайта посмотрел посетитель = " . $sessionPgs . "\n";
+	$note_body .= "URL текущей страницы посетителя = " . $sessionCpg . "\n";
+	$note_body .= " -------------------- \n";
+	$note_body .= "ЛИЧНЫЕ ДАННЫЕ\n";
+	$note_body .= "Сколько раз пользователь посещал сайт = " . $udataVst . "\n";
+	$note_body .= "Текущий браузер = " . $udataUag ;
+
+
+    $lead = $amo->lead;// Создаем лида
+    // $lead->debug(true); // Режим отладки
+    $lead['name'] = 'Заявка с сайта alfakrov.by';  //название сделки
+    $lead['responsible_user_id'] = $current_user; // ID ответственного 
+    $lead['price'] = 0;  // В поле "Бюджет"
+    $lead['pipeline_id'] = 741307; // ID воронки = Продажи
+    $lead['status_id'] = -1; // Неразобранное
+    $lead['tags'] = ['alfakrov.by', $form_type];//Теги
+
+    $lead->addCustomField(481661, [ // ID  поля в которое будт приходить заявки
+        [$user_message]// сюда вписать значение из атрибута "name" пример: <input name="phone">
+    ]);
+
+    // КАЛЬКУЛЯТОР
+    $lead->addCustomField(89025, [[$calc_area]]);
+    $lead->addCustomField(481679, [[$calc_metal]]);    
+    $lead->addCustomField(481681, [[$calc_water]]);
+    $lead->addCustomField(481683, [[$calc_elements]]);
+    $lead->addCustomField(481685, [[$calc_foof]]);
+
+    $id = $lead->apiAdd();  // добавляем сделку и получаем ее ID
+
+    
+    $contact = $amo->contact;// Получение экземпляра модели для работы с контактами
+    // $contact->debug(true); // Режим отладки
+    // Заполнение полей модели
+    $contact['name'] = !IsNullOrEmptyString($user_name) ? $user_name : 'Имя не указано';
+    $contact['linked_leads_id'] = [(int)$id]; //привязываем к лиду по его ID
+
+    $contact->addCustomField(88681, [ // ID  поля в которое будт приходить заявки
+        [$user_email, 'WORK']// Имейл контакта
+    ]);
+    $contact->addCustomField(88679, [ // ID  поля в которое будт приходить заявки
+        [$user_phone, 'WORK']// Номер телефона контакта
+    ]);
+    $contact->addCustomField(478049, [ // ID  поля в которое будт приходить заявки
+        [928325]// Источник заявки
+    ]);
+
+    $contact_id = $contact->apiAdd();// Добавление нового контакта и получение его ID
+
+
+    $note = $amo->note;//Добавление примечания
+    // $note->debug(true); // Режим отладки
+    $note['element_id'] = $id; //привязываем к лиду по его ID
+    $note['element_type'] = \AmoCRM\Models\Note::TYPE_LEAD; // 1 - contact, 2 - lead
+    $note['note_type'] = \AmoCRM\Models\Note::COMMON; // @see https://developers.amocrm.ru/rest_api/notes_type.php
+    $note['text'] = $note_body; //В переменной $note_body - текст примечания (UTM метки)
+    $note_id = $note->apiAdd();
+
+    
+    $task = $amo->task;//Добавление задачи к сделке
+    $task['element_id'] = $id; //привязываем к лиду по его ID
+    $task['element_type'] = \AmoCRM\Models\Note::TYPE_LEAD;;
+    // $task['date_create'] = '-2 DAYS';
+    $task['task_type'] = 1;
+    $task['text'] = "Позвонить клиенту";
+    $task['responsible_user_id'] = $current_user;
+    $task['complete_till'] = '+1 DAY'; // Срок выполнения
+    $task_id = $task->apiAdd();// Добавление новой задачи и получение ее ID
+  
+
+} catch (\AmoCRM\Exception $e) {
+    printf('Error (%d): %s', $e->getCode(), $e->getMessage());
+}
