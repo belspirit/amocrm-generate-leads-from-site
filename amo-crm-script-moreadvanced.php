@@ -15,9 +15,9 @@
         $hash = 'secretkey';
 
         //ID юзеров amoCRM
-        $GuteHouze = 654582;
+        $User = 654582;
 
-        $current_user = $GuteHouze;
+        $current_user = $User;
 
         //Создаем новый экземпляр
         $amo = new \AmoCRM\Client($domain, $login, $hash);
